@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import { VitePWA } from 'vite-plugin-pwa'
+// import { VitePWA } from 'vite-plugin-pwa'
 import { visualizer } from 'rollup-plugin-visualizer'
 
 // https://vitejs.dev/config/
@@ -12,77 +12,77 @@ export default defineConfig({
       // Optimize JSX runtime
       jsxRuntime: 'automatic'
     }),
-    VitePWA({
-      registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
-      manifest: {
-        name: 'Avalanche Disaster Relief',
-        short_name: 'Relief Network',
-        description: 'Blockchain-powered disaster relief micro-funding network',
-        theme_color: '#e84142',
-        background_color: '#ffffff',
-        display: 'standalone',
-        scope: '/',
-        start_url: '/',
-        icons: [
-          {
-            src: 'pwa-192x192.png',
-            sizes: '192x192',
-            type: 'image/png'
-          },
-          {
-            src: 'pwa-512x512.png',
-            sizes: '512x512',
-            type: 'image/png'
-          },
-          {
-            src: 'pwa-512x512.png',
-            sizes: '512x512',
-            type: 'image/png',
-            purpose: 'any maskable'
-          }
-        ]
-      },
-      workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
-        maximumFileSizeToCacheInBytes: 5000000,
-        runtimeCaching: [
-          {
-            urlPattern: /^https:\/\/api\.pinata\.cloud\/.*/i,
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: 'ipfs-cache',
-              expiration: {
-                maxEntries: 100,
-                maxAgeSeconds: 60 * 60 * 24 * 7 // 1 week
-              }
-            }
-          },
-          {
-            urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'google-fonts-cache',
-              expiration: {
-                maxEntries: 10,
-                maxAgeSeconds: 60 * 60 * 24 * 365 // 1 year
-              }
-            }
-          },
-          {
-            urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp)$/,
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'images-cache',
-              expiration: {
-                maxEntries: 200,
-                maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days
-              }
-            }
-          }
-        ]
-      }
-    }),
+    // VitePWA({
+    //   registerType: 'autoUpdate',
+    //   includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
+    //   manifest: {
+    //     name: 'Avalanche Disaster Relief',
+    //     short_name: 'Relief Network',
+    //     description: 'Blockchain-powered disaster relief micro-funding network',
+    //     theme_color: '#e84142',
+    //     background_color: '#ffffff',
+    //     display: 'standalone',
+    //     scope: '/',
+    //     start_url: '/',
+    //     icons: [
+    //       {
+    //         src: 'pwa-192x192.png',
+    //         sizes: '192x192',
+    //         type: 'image/png'
+    //       },
+    //       {
+    //         src: 'pwa-512x512.png',
+    //         sizes: '512x512',
+    //         type: 'image/png'
+    //       },
+    //       {
+    //         src: 'pwa-512x512.png',
+    //         sizes: '512x512',
+    //         type: 'image/png',
+    //         purpose: 'any maskable'
+    //       }
+    //     ]
+    //   },
+    //   workbox: {
+    //     globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+    //     maximumFileSizeToCacheInBytes: 5000000,
+    //     runtimeCaching: [
+    //       {
+    //         urlPattern: /^https:\/\/api\.pinata\.cloud\/.*/i,
+    //         handler: 'NetworkFirst',
+    //         options: {
+    //           cacheName: 'ipfs-cache',
+    //           expiration: {
+    //             maxEntries: 100,
+    //             maxAgeSeconds: 60 * 60 * 24 * 7 // 1 week
+    //           }
+    //         }
+    //       },
+    //       {
+    //         urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
+    //         handler: 'CacheFirst',
+    //         options: {
+    //           cacheName: 'google-fonts-cache',
+    //           expiration: {
+    //             maxEntries: 10,
+    //             maxAgeSeconds: 60 * 60 * 24 * 365 // 1 year
+    //           }
+    //         }
+    //       },
+    //       {
+    //         urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp)$/,
+    //         handler: 'CacheFirst',
+    //         options: {
+    //           cacheName: 'images-cache',
+    //           expiration: {
+    //             maxEntries: 200,
+    //             maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days
+    //           }
+    //         }
+    //       }
+    //     ]
+    //   }
+    // }),
     // Bundle analyzer - only in development with ANALYZE=true
     process.env.ANALYZE && visualizer({
       filename: 'dist/bundle-analysis.html',
@@ -91,6 +91,8 @@ export default defineConfig({
       brotliSize: true
     })
   ].filter(Boolean),
+
+  base: '/',
   
   server: {
     port: 3002,
@@ -124,9 +126,9 @@ export default defineConfig({
         // Optimized chunking strategy
         manualChunks: (id) => {
           // Core React libraries
-          if (id.includes('node_modules/react') || id.includes('node_modules/react-dom')) {
-            return 'react-vendor';
-          }
+          // if (id.includes('node_modules/react') || id.includes('node_modules/react-dom')) {
+          //   return 'react-vendor';
+          // }
           
           // Web3 and blockchain libraries
           if (id.includes('node_modules/ethers') || id.includes('node_modules/@metamask')) {
@@ -184,7 +186,7 @@ export default defineConfig({
     },
     
     // Terser options for better minification
-    minify: 'terser',
+    minify: 'esbuild',
     terserOptions: {
       compress: {
         // Remove console logs in production
