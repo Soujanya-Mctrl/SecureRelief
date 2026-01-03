@@ -3,7 +3,7 @@ import { ethers } from 'ethers'
 import toast from 'react-hot-toast'
 import { DisasterReliefContractService } from '../services/contractService'
 
-// Avalanche network configuration
+// Avalanche network configuration with fallback RPC URLs
 const AVALANCHE_CONFIG = {
   chainId: 43113, // Fuji testnet
   chainName: 'Avalanche Fuji Testnet',
@@ -12,8 +12,50 @@ const AVALANCHE_CONFIG = {
     symbol: 'AVAX',
     decimals: 18,
   },
-  rpcUrls: ['https://api.avax-test.network/ext/bc/C/rpc'],
+  rpcUrls: [
+    'https://api.avax-test.network/ext/bc/C/rpc',
+    'https://rpc.ankr.com/avalanche_fuji',
+    'https://avalanche-fuji-c-chain.publicnode.com',
+  ],
   blockExplorerUrls: ['https://testnet.snowtrace.io/'],
+}
+
+// LocalStorage key for wallet connection persistence
+const WALLET_CONNECTED_KEY = 'securerelief_wallet_connected'
+
+// Retry configuration for RPC calls
+const RETRY_CONFIG = {
+  maxRetries: 3,
+  initialDelay: 1000, // 1 second
+  maxDelay: 5000, // 5 seconds
+  backoffMultiplier: 2,
+}
+
+// Helper function to retry async operations with exponential backoff
+async function retryWithBackoff<T>(
+  fn: () => Promise<T>,
+  retries = RETRY_CONFIG.maxRetries,
+  delay = RETRY_CONFIG.initialDelay
+): Promise<T> {
+  try {
+    return await fn()
+  } catch (error: any) {
+    // Check if it's a rate limiting error
+    const isRateLimited =
+      error?.code === -32005 ||
+      error?.code === 429 ||
+      error?.message?.includes('rate limit') ||
+      error?.message?.includes('too many requests')
+
+    if (retries > 0 && isRateLimited) {
+      const nextDelay = Math.min(delay * RETRY_CONFIG.backoffMultiplier, RETRY_CONFIG.maxDelay)
+      console.log(`Rate limited, retrying in ${delay}ms... (${retries} retries left)`)
+      await new Promise(resolve => setTimeout(resolve, delay))
+      return retryWithBackoff(fn, retries - 1, nextDelay)
+    }
+
+    throw error
+  }
 }
 
 // Define the store state interface
@@ -44,7 +86,7 @@ interface Web3Store {
 
   // Actions
   initialize: () => Promise<void>;
-  connectWallet: () => Promise<void>;
+  connectWallet: (silent?: boolean) => Promise<void>;
   switchToAvalanche: () => Promise<void>;
   determineUserRole: (account: string, contractService: DisasterReliefContractService) => Promise<string>;
   disconnect: () => void;
@@ -104,17 +146,25 @@ export const useWeb3Store = create<Web3Store>((set, get) => ({
         console.log('Ethereum provider detected')
         const provider = new ethers.BrowserProvider(window.ethereum)
 
-        // Check if already connected
+        // Check if user previously connected (persistence)
+        const wasConnected = typeof window !== 'undefined' && localStorage.getItem(WALLET_CONNECTED_KEY) === 'true'
+
+        // Check if already connected or was previously connected
         try {
           const accounts = await provider.send('eth_accounts', [])
-          if (accounts.length > 0) {
-            console.log('Found existing connection, attempting to reconnect...')
-            await get().connectWallet()
+          if (accounts.length > 0 || wasConnected) {
+            console.log('Found existing connection or previous session, attempting to reconnect...')
+            await get().connectWallet(true) // Silent mode for auto-reconnect
           } else {
             console.log('No existing connection found')
           }
         } catch (error) {
           console.log('Error checking existing accounts:', error)
+          // If we were previously connected, try to reconnect anyway
+          if (wasConnected) {
+            console.log('Attempting reconnection from previous session...')
+            await get().connectWallet(true) // Silent mode for auto-reconnect
+          }
         }
 
         // Listen for account changes
@@ -148,7 +198,8 @@ export const useWeb3Store = create<Web3Store>((set, get) => ({
   },
 
   // Connect wallet
-  connectWallet: async () => {
+  // When silent is true, attempts to reconnect without prompting (for auto-reconnect on page load)
+  connectWallet: async (silent = false) => {
     const state = get()
     if (state.isConnecting) return
 
@@ -157,7 +208,9 @@ export const useWeb3Store = create<Web3Store>((set, get) => ({
     try {
       // Check for Web3 provider
       if (typeof window === 'undefined' || typeof window.ethereum === 'undefined') {
-        toast.error('Please install MetaMask or another Web3 wallet')
+        if (!silent) {
+          toast.error('Please install MetaMask or another Web3 wallet')
+        }
         set({ isConnecting: false })
         return
       }
@@ -166,8 +219,22 @@ export const useWeb3Store = create<Web3Store>((set, get) => ({
       const provider = new ethers.BrowserProvider(window.ethereum)
 
       // Request account access
-      console.log('Requesting accounts...')
-      await provider.send('eth_requestAccounts', [])
+      // Use eth_accounts (no prompt) for silent reconnect, eth_requestAccounts (prompts) for explicit connect
+      console.log(silent ? 'Checking accounts silently...' : 'Requesting accounts...')
+      const accounts = silent
+        ? await provider.send('eth_accounts', [])
+        : await provider.send('eth_requestAccounts', [])
+
+      // If silent mode and no accounts, exit quietly (user needs to explicitly connect)
+      if (silent && accounts.length === 0) {
+        console.log('No authorized accounts found, silent reconnect aborted')
+        set({ isConnecting: false })
+        // Clear localStorage since we couldn't reconnect
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem(WALLET_CONNECTED_KEY)
+        }
+        return
+      }
 
       const signer = await provider.getSigner()
       const account = await signer.getAddress()
@@ -192,9 +259,21 @@ export const useWeb3Store = create<Web3Store>((set, get) => ({
         }
       }
 
-      // Get balance
-      const balance = await provider.getBalance(account)
-      const formattedBalance = ethers.formatEther(balance)
+      // Get balance with retry logic (non-blocking)
+      let formattedBalance = '0'
+      try {
+        const balance = await retryWithBackoff(async () => {
+          return await provider.getBalance(account)
+        })
+        formattedBalance = ethers.formatEther(balance)
+      } catch (balanceError) {
+        console.warn('Failed to fetch balance (rate limited), will retry later:', balanceError)
+        // Don't fail the connection just because balance fetch failed
+        // Schedule a delayed balance update
+        setTimeout(() => {
+          get().updateBalance().catch(e => console.warn('Delayed balance update failed:', e))
+        }, 3000)
+      }
 
       // Initialize contract service with error handling
       let contractService = null
@@ -226,8 +305,18 @@ export const useWeb3Store = create<Web3Store>((set, get) => ({
         await contractService.initialize()
         console.log('Contract service initialized successfully')
 
-        // Get USDC balance
-        usdcBalance = await contractService.getUSDCBalance(account)
+        // Get USDC balance with retry logic
+        try {
+          usdcBalance = await retryWithBackoff(async () => {
+            return await contractService.getUSDCBalance(account)
+          })
+        } catch (usdcError) {
+          console.warn('Failed to fetch USDC balance (rate limited), will retry later:', usdcError)
+          // Schedule a delayed USDC balance update
+          setTimeout(() => {
+            get().updateBalance().catch(e => console.warn('Delayed USDC balance update failed:', e))
+          }, 5000)
+        }
 
         // Determine user role
         userRole = await get().determineUserRole(account, contractService)
@@ -269,17 +358,31 @@ export const useWeb3Store = create<Web3Store>((set, get) => ({
         contractService,
       })
 
+      // Save connection state to localStorage for persistence
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(WALLET_CONNECTED_KEY, 'true')
+      }
+
       toast.success(`Connected as ${userRole}`)
       console.log('Wallet connection completed successfully')
-    } catch (error) {
+    } catch (error: any) {
       console.error('Wallet connection error:', error)
       let errorMessage = 'Failed to connect wallet'
 
-      if (error.code === 4001) {
+      // Check if it's a rate limiting error
+      const isRateLimited =
+        error?.code === -32005 ||
+        error?.code === 429 ||
+        error?.message?.includes('rate limit') ||
+        error?.message?.includes('too many requests')
+
+      if (isRateLimited) {
+        errorMessage = 'RPC rate limit reached. Please wait a moment and try again.'
+      } else if (error.code === 4001) {
         errorMessage = 'Connection rejected by user'
       } else if (error.code === -32002) {
         errorMessage = 'Connection request already pending'
-      } else if (error.message.includes('User rejected')) {
+      } else if (error.message?.includes('User rejected')) {
         errorMessage = 'Connection rejected by user'
       }
 
@@ -391,10 +494,10 @@ export const useWeb3Store = create<Web3Store>((set, get) => ({
         ]
       }
 
-      // FOR TESTING: Force admin role
-      console.log('DEBUG: Forcing Admin role for testing');
-      set({ permissions: rolePermissions.admin });
-      return 'admin';
+      // FOR TESTING: Force government role
+      console.log('DEBUG: Forcing Government role for testing');
+      set({ permissions: rolePermissions.government });
+      return 'government';
     } catch (error) {
       console.error('Role determination error:', error)
       return 'donor'
@@ -406,6 +509,11 @@ export const useWeb3Store = create<Web3Store>((set, get) => ({
     const { contractService } = get()
     if (contractService) {
       contractService.removeEventListeners()
+    }
+
+    // Clear connection persistence from localStorage
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem(WALLET_CONNECTED_KEY)
     }
 
     set({
@@ -426,18 +534,33 @@ export const useWeb3Store = create<Web3Store>((set, get) => ({
     toast.success('Wallet disconnected')
   },
 
-  // Update balance
+  // Update balance with retry logic
   updateBalance: async () => {
     const { provider, account, contractService } = get()
     if (!provider || !account) return
 
     try {
-      const balance = await provider.getBalance(account)
-      const formattedBalance = ethers.formatEther(balance)
+      // Try to get AVAX balance with retry
+      let formattedBalance = '0'
+      try {
+        const balance = await retryWithBackoff(async () => {
+          return await provider.getBalance(account)
+        })
+        formattedBalance = ethers.formatEther(balance)
+      } catch (balanceError) {
+        console.warn('Failed to update AVAX balance:', balanceError)
+      }
 
+      // Try to get USDC balance with retry
       let usdcBalance = '0'
       if (contractService) {
-        usdcBalance = await contractService.getUSDCBalance(account)
+        try {
+          usdcBalance = await retryWithBackoff(async () => {
+            return await contractService.getUSDCBalance(account)
+          })
+        } catch (usdcError) {
+          console.warn('Failed to update USDC balance:', usdcError)
+        }
       }
 
       set({ balance: formattedBalance, usdcBalance })

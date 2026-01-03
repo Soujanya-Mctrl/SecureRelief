@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { 
-  Users, 
-  Heart, 
-  Target, 
-  TrendingUp, 
-  MapPin, 
+import {
+  Users,
+  Heart,
+  Target,
+  TrendingUp,
+  MapPin,
   Clock,
   Award,
   Activity
@@ -158,13 +158,12 @@ const ImpactMetrics = () => {
         <div className={`p-3 rounded-lg ${getColorClasses(metric.color)}`}>
           <metric.icon className="h-6 w-6" />
         </div>
-        <div className={`text-sm font-medium px-2 py-1 rounded-full ${
-          metric.trendPositive ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'
-        }`}>
+        <div className={`text-sm font-medium px-2 py-1 rounded-full ${metric.trendPositive ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'
+          }`}>
           {metric.trend}
         </div>
       </div>
-      
+
       <div className="space-y-2">
         <h3 className="text-sm font-medium text-gray-600">{metric.title}</h3>
         <div className="text-3xl font-bold text-gray-900">
@@ -206,7 +205,7 @@ const ImpactMetrics = () => {
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Impact Metrics</h2>
           <p className="text-gray-600">Measuring our real-world impact on disaster relief efforts</p>
         </div>
-        
+
         <div className="mt-4 lg:mt-0">
           <select
             value={timeframe}
@@ -224,7 +223,7 @@ const ImpactMetrics = () => {
       {/* Impact Statistics */}
       <div>
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Direct Impact</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {impactStats.map((metric, index) => (
             <MetricCard key={metric.title} metric={metric} index={index} />
           ))}
@@ -234,7 +233,7 @@ const ImpactMetrics = () => {
       {/* Performance Metrics */}
       <div>
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Performance Metrics</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {performanceMetrics.map((metric, index) => (
             <MetricCard key={metric.title} metric={metric} index={index + 4} />
           ))}
@@ -249,7 +248,7 @@ const ImpactMetrics = () => {
         className="bg-white rounded-xl shadow-lg border border-gray-200 p-6"
       >
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Impact Stories</h3>
-        
+
         <div className="space-y-4">
           {[
             {
@@ -300,7 +299,7 @@ const ImpactMetrics = () => {
         className="bg-white rounded-xl shadow-lg border border-gray-200 p-6"
       >
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Global Reach</h3>
-        
+
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
             { region: 'Asia Pacific', disasters: 42, color: 'blue' },

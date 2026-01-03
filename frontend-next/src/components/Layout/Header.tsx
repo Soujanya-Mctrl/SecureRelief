@@ -24,7 +24,7 @@ import WalletStatusPanel from '../Web3/WalletStatusPanel'
 import RoleGuard from '../Auth/RoleGuard'
 import Button from '../UI/Button'
 
-const Header = ({ onMenuClick }) => {
+const Header = ({ onMenuClick, onDesktopMenuClick }) => {
   const pathname = usePathname()
   const router = useRouter()
   const { isConnected, account, userRole, balance } = useWeb3Store()
@@ -119,16 +119,15 @@ const Header = ({ onMenuClick }) => {
         <div className="flex items-center justify-between h-16">
           {/* Left Section */}
           <div className="flex items-center">
-            {/* Mobile Menu Button */}
+            {/* Mobile Menu Button (Hidden on Desktop) */}
             <button
               onClick={onMenuClick}
               className="p-2 text-gray-500 rounded-md lg:hidden hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-green-500"
             >
               <Menu className="w-6 h-6" />
             </button>
-
             {/* Logo and Title */}
-            <Link href="/" className="flex items-center ml-0 lg:ml-0">
+            <Link href="/" className="flex items-center">
               <motion.div
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
@@ -334,7 +333,7 @@ const Header = ({ onMenuClick }) => {
           />
         </div>
       </div>
-    </header>
+    </header >
   )
 }
 

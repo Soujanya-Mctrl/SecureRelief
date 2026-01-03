@@ -136,7 +136,7 @@ const ProofGallery = () => {
 
     return (
         <Layout>
-            <div className="min-h-screen bg-gray-50">
+            <div className="min-h-screen">
                 <div className="px-4 py-8 mx-auto max-w-7xl sm:px-6 lg:px-8">
                     <div className="mb-8">
                         <h1 className="text-3xl font-bold text-gray-900">Proof of Aid Gallery</h1>
@@ -225,8 +225,8 @@ const ProofGallery = () => {
                                 </div>
                             </div>
                             <div className="flex gap-4">
-                                <Button className="flex-1"><Download className="w-4 h-4 mr-2" /> Download Proof</Button>
-                                <Button variant="outline" className="flex-1"><Share2 className="w-4 h-4 mr-2" /> Share</Button>
+                                <Button className="flex-1" icon={Download}>Download Proof</Button>
+                                <Button variant="outline" className="flex-1" icon={Share2}>Share</Button>
                             </div>
                         </div>
                     )}

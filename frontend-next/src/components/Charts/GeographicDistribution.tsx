@@ -112,53 +112,41 @@ const GeographicDistribution = () => {
 
   const RegionCard = ({ region, isSelected, onClick }) => (
     <motion.div
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.4 }}
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
       onClick={onClick}
-      className={`cursor-pointer rounded-xl border-2 transition-all duration-300 ${isSelected
-        ? 'border-avalanche-500 bg-avalanche-50 shadow-avalanche-200'
-        : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-lg'
-        } p-4 sm:p-6 shadow-md hover:shadow-xl transform hover:-translate-y-1`}
+      className={`cursor-pointer rounded-2xl border-2 p-6 transition-all duration-300 ${isSelected
+        ? 'border-avalanche-500 bg-avalanche-50 shadow-lg'
+        : 'border-gray-200 bg-white hover:border-avalanche-300 hover:shadow-md'
+        }`}
     >
-      <div className="flex items-center justify-between mb-4 border-b border-gray-100 pb-3">
-        <div className="flex items-center min-w-0">
-          <div className={`w-3 h-3 flex-shrink-0 rounded-full mr-2 ${getRegionColor(region.disasters)} shadow-sm`}></div>
-          <h3 className="text-base font-bold text-gray-900 truncate">{region.name}</h3>
-        </div>
-        <div className="ml-2 bg-gray-100 px-2 py-0.5 rounded text-[10px] font-bold text-gray-600 uppercase tracking-wider">
-          {region.disasters} Active
-        </div>
+      {/* Region Name */}
+      <div className="flex items-center gap-3 mb-4">
+        <div className={`w-4 h-4 rounded-full ${getRegionColor(region.disasters)}`}></div>
+        <h3 className="text-xl font-bold text-gray-900">{region.name}</h3>
       </div>
 
-      <div className="grid grid-cols-1 gap-3 sm:gap-4">
-        <div className="bg-gray-50 rounded-lg p-3 hover:bg-gray-100 transition-colors">
-          <div className="text-[10px] text-gray-500 font-bold uppercase mb-1 flex items-center">
-            <DollarSign className="w-3 h-3 mr-1" />
-            Total Funds
-          </div>
-          <div className="font-bold text-gray-900 text-sm">{formatCurrency(region.totalFunds)}</div>
-        </div>
-        <div className="bg-gray-50 rounded-lg p-3 hover:bg-gray-100 transition-colors">
-          <div className="text-[10px] text-gray-500 font-bold uppercase mb-1 flex items-center">
-            <Users className="w-3 h-3 mr-1" />
-            Beneficiaries
-          </div>
-          <div className="font-bold text-gray-900 text-sm">{region.beneficiaries.toLocaleString()}</div>
-        </div>
-        <div className="bg-gray-50 rounded-lg p-3 hover:bg-gray-100 transition-colors">
-          <div className="text-[10px] text-gray-500 font-bold uppercase mb-1 flex items-center">
-            <Activity className="w-3 h-3 mr-1" />
-            Active Vendors
-          </div>
-          <div className="font-bold text-gray-900 text-sm">{region.activeVendors}</div>
-        </div>
+      {/* Disaster Count */}
+      <div className="bg-gray-50 rounded-xl p-4 mb-4">
+        <div className="text-4xl font-black text-gray-900">{region.disasters}</div>
+        <div className="text-sm font-medium text-gray-500">Active Disasters</div>
       </div>
 
-      {/* Interactive indicator */}
-      <div className="mt-3 sm:mt-4 flex items-center justify-center">
-        <div className={`w-2 h-2 rounded-full transition-all duration-300 ${isSelected ? 'bg-avalanche-500' : 'bg-gray-300'
-          }`}></div>
+      {/* Stats Row */}
+      <div className="grid grid-cols-3 gap-4 text-center">
+        <div>
+          <div className="text-lg font-bold text-green-600">{formatCurrency(region.totalFunds)}</div>
+          <div className="text-xs text-gray-500">Funds</div>
+        </div>
+        <div>
+          <div className="text-lg font-bold text-blue-600">{(region.beneficiaries / 1000).toFixed(1)}K</div>
+          <div className="text-xs text-gray-500">Helped</div>
+        </div>
+        <div>
+          <div className="text-lg font-bold text-orange-600">{region.activeVendors}</div>
+          <div className="text-xs text-gray-500">Vendors</div>
+        </div>
       </div>
     </motion.div>
   );
@@ -407,7 +395,7 @@ const GeographicDistribution = () => {
       </motion.div>
 
       {/* Regional Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {regions.map((region) => (
           <RegionCard
             key={region.id}

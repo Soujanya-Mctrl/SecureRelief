@@ -223,7 +223,7 @@ const OracleDashboard = () => {
 
     return (
         <Layout>
-            <div className="min-h-screen bg-gray-50">
+            <div className="min-h-screen">
                 <div className="px-4 py-8 mx-auto max-w-7xl sm:px-6 lg:px-8">
                     {/* Header */}
                     <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">

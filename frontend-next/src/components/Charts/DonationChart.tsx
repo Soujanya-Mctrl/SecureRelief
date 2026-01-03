@@ -91,26 +91,26 @@ const DonationChart = ({ timeRange = '7d' }) => {
       className="bg-white rounded-xl shadow-lg border border-gray-200 p-6"
     >
       {/* Summary Stats at Top */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-        <div className="bg-gray-50 rounded-xl p-4 border border-gray-100 shadow-sm">
+      <div className="grid grid-cols-2 gap-4 mb-8">
+        <div className="bg-white rounded-2xl p-4 border border-gray-200 shadow-sm">
           <div className="text-2xl font-black text-gray-900 mb-0.5">
             {formatCurrency(Math.max(...chartData.map(d => d.amount)))}
           </div>
           <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Peak Day</div>
         </div>
-        <div className="bg-gray-50 rounded-xl p-4 border border-gray-100 shadow-sm">
+        <div className="bg-white rounded-2xl p-4 border border-gray-200 shadow-sm">
           <div className="text-2xl font-black text-gray-900 mb-0.5">
             {formatCurrency(totalDonations / chartData.length)}
           </div>
           <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Daily Average</div>
         </div>
-        <div className="bg-gray-50 rounded-xl p-4 border border-gray-100 shadow-sm">
+        <div className="bg-white rounded-2xl p-4 border border-gray-200 shadow-sm">
           <div className="text-2xl font-black text-gray-900 mb-0.5">
             {chartData.filter(d => d.amount > totalDonations / chartData.length).length}
           </div>
           <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Above Average Days</div>
         </div>
-        <div className="bg-gray-50 rounded-xl p-4 border border-gray-100 shadow-sm">
+        <div className="bg-white rounded-2xl p-4 border border-gray-200 shadow-sm">
           <div className="text-2xl font-black text-avalanche-500 mb-0.5">
             +{Math.floor(Math.random() * 50 + 20)}%
           </div>

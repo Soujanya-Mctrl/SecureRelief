@@ -12,7 +12,7 @@ const Layout = ({ children }) => {
     <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Header */}
       <Header onMenuClick={() => setSidebarOpen(true)} />
-      
+
       <div className="flex flex-1 overflow-hidden">
         {/* Desktop Sidebar */}
         <div className="hidden lg:flex lg:flex-shrink-0">
@@ -31,10 +31,10 @@ const Layout = ({ children }) => {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.3 }}
-                className="fixed inset-0 z-40 bg-gray-600 bg-opacity-75 lg:hidden"
+                className="fixed inset-0 z-40 bg-transparent lg:hidden"
                 onClick={() => setSidebarOpen(false)}
               />
-              
+
               {/* Mobile Sidebar */}
               <motion.div
                 initial={{ x: '-100%' }}
@@ -63,7 +63,7 @@ const Layout = ({ children }) => {
               </motion.div>
             </div>
           </main>
-          
+
           {/* Footer */}
           <Footer />
         </div>

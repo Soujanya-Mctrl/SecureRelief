@@ -54,6 +54,46 @@ const impactStats = {
     impactScore: 'Gold'
 };
 
+interface DetailedImpact {
+    id: string;
+    disasterName: string;
+    location: string;
+    amount: number;
+    peopleHelped: number;
+    reliefType: string;
+    outcome: string;
+}
+
+const mockDetailedImpacts: DetailedImpact[] = [
+    {
+        id: '1',
+        disasterName: 'Hurricane Delta Relief',
+        location: 'Florida Gulf Coast',
+        amount: 250,
+        peopleHelped: 45,
+        reliefType: 'Immediate relief',
+        outcome: 'Emergency shelter and food provided to 45 families'
+    },
+    {
+        id: '2',
+        disasterName: 'Wildfire Recovery',
+        location: 'California Central Valley',
+        amount: 150,
+        peopleHelped: 32,
+        reliefType: 'Immediate relief',
+        outcome: 'Temporary housing and medical supplies for 32 individuals'
+    },
+    {
+        id: '3',
+        disasterName: 'Flood Relief 2024',
+        location: 'Texas Panhandle',
+        amount: 200,
+        peopleHelped: 28,
+        reliefType: 'Reconstruction',
+        outcome: 'Supplied building materials for 12 damaged homes'
+    }
+];
+
 const mockDisasters: Disaster[] = [
     {
         id: 1,
@@ -216,7 +256,7 @@ const DonorDashboard = () => {
 
     return (
         <Layout>
-            <div className="min-h-screen bg-gray-50">
+            <div className="min-h-screen">
                 {/* Header */}
                 <div className="bg-white border-b border-gray-200">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -466,8 +506,8 @@ const DonorDashboard = () => {
                                                                     setShowDonationModal(true);
                                                                 }}
                                                                 className="flex-1"
+                                                                icon={Heart}
                                                             >
-                                                                <Heart className="h-4 w-4 mr-2" />
                                                                 Donate
                                                             </Button>
                                                         ) : (
@@ -549,7 +589,7 @@ const DonorDashboard = () => {
 
                     {activeTab === 'impact' && (
                         <div className="space-y-6">
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <Card className="p-6 text-center shadow-sm">
                                     <Users className="w-10 h-10 mx-auto mb-4 text-blue-500" />
                                     <h3 className="text-3xl font-bold text-gray-900">{impactStats.totalPeopleHelped}</h3>
@@ -590,6 +630,55 @@ const DonorDashboard = () => {
                                     <Heart className="w-64 h-64" />
                                 </div>
                             </Card>
+
+                            <div>
+                                <h3 className="text-xl font-bold text-gray-900 mb-6">Impact by Disaster</h3>
+                                <div className="space-y-6">
+                                    {mockDetailedImpacts.map((impact) => (
+                                        <Card key={impact.id} className="p-6">
+                                            <div className="flex justify-between items-start mb-6">
+                                                <div>
+                                                    <h4 className="text-lg font-bold text-gray-900">{impact.disasterName}</h4>
+                                                    <div className="flex items-center text-sm text-gray-500 mt-1">
+                                                        <MapPin className="w-4 h-4 mr-1" />
+                                                        {impact.location}
+                                                    </div>
+                                                </div>
+                                                <div className="text-right">
+                                                    <div className="text-lg font-bold text-green-600">${impact.amount}</div>
+                                                    <div className="text-xs text-gray-500">donated</div>
+                                                </div>
+                                            </div>
+
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-6">
+                                                <div className="flex items-start">
+                                                    <div className="p-2 bg-blue-50 rounded-lg mr-4">
+                                                        <Users className="w-5 h-5 text-blue-600" />
+                                                    </div>
+                                                    <div>
+                                                        <div className="font-bold text-gray-900">{impact.peopleHelped} people helped</div>
+                                                        <div className="text-sm text-gray-500">Direct beneficiaries</div>
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-start">
+                                                    <div className="p-2 bg-red-50 rounded-lg mr-4">
+                                                        <Heart className="w-5 h-5 text-red-600" />
+                                                    </div>
+                                                    <div>
+                                                        <div className="font-bold text-gray-900">{impact.reliefType}</div>
+                                                        <div className="text-sm text-gray-500">Emergency response</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div className="bg-gray-50 rounded-xl p-4">
+                                                <div className="text-sm font-bold text-gray-900 mb-1">Outcome:</div>
+                                                <div className="text-sm text-gray-600">{impact.outcome}</div>
+                                            </div>
+                                        </Card>
+                                    ))}
+                                </div>
+                            </div>
                         </div>
                     )}
                 </div>
@@ -686,8 +775,8 @@ const DonorDashboard = () => {
                                     loading={donating}
                                     disabled={!donationAmount || parseFloat(donationAmount) <= 0}
                                     className="flex-1"
+                                    icon={Heart}
                                 >
-                                    <Heart className="h-4 w-4 mr-2" />
                                     Confirm Donation
                                 </Button>
                             </div>

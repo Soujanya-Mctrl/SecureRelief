@@ -4,6 +4,7 @@ import React from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import {
+  Menu,
   X,
   Mountain,
   Settings,
@@ -12,7 +13,7 @@ import {
 import { useAuth } from '../../contexts/AuthContext'
 import RoleBasedNavigation from '../Navigation/RoleBasedNavigation'
 
-const Sidebar = ({ onClose }: { onClose?: () => void }) => {
+const Sidebar = ({ isCollapsed = false, onToggle, onClose }: { isCollapsed?: boolean; onToggle?: () => void; onClose?: () => void }) => {
   const { isAuthenticated, user } = useAuth()
 
   const bottomNavigation = [
@@ -29,62 +30,104 @@ const Sidebar = ({ onClose }: { onClose?: () => void }) => {
   ]
 
   return (
-    <div className="flex flex-col h-full bg-white border-r border-gray-200">
-      {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-200 lg:border-b-0">
-        <Link href="/" className="flex items-center" onClick={onClose}>
-          <span className="ml-2 text-lg font-bold text-gray-900">
-            Relief Network
-          </span>
-        </Link>
+    <div className={`relative flex flex-col h-full bg-white border-r border-gray-200 transition-all duration-300 ${isCollapsed ? 'w-20' : 'w-full'}`}>
+      {/* Brand Section with Toggle */}
+      <div className={`flex items-center p-4 border-b border-gray-200 ${isCollapsed ? 'flex-col space-y-4 justify-center' : 'justify-start space-x-4'}`}>
+        {/* Desktop Toggle Button */}
+        {!onClose && onToggle && (
+          <motion.button
+            onClick={onToggle}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            className="flex items-center justify-center p-2 text-gray-400 hover:text-green-600 hover:bg-gray-50 rounded-lg transition-all"
+            title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+          >
+            <Menu className="w-5 h-5" />
+          </motion.button>
+        )}
+
+        <div className="flex items-center overflow-hidden">
+          <Link href="/" className="flex items-center group" onClick={onClose}>
+            {!isCollapsed && (
+              <motion.div
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Mountain className="flex-shrink-0 w-8 h-8 text-green-500 transition-colors group-hover:text-green-600" />
+              </motion.div>
+            )}
+            {!isCollapsed && (
+              <motion.span
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -10 }}
+                transition={{ duration: 0.2 }}
+                className="ml-3 text-lg font-bold text-gray-900 whitespace-nowrap group-hover:text-green-600 transition-colors"
+              >
+                Relief Network
+              </motion.span>
+            )}
+          </Link>
+        </div>
 
         {/* Close button for mobile */}
         {onClose && (
-          <button
+          <motion.button
+            whileHover={{ scale: 1.1, rotate: 90 }}
+            whileTap={{ scale: 0.9 }}
             onClick={onClose}
-            className="p-2 text-gray-500 rounded-md lg:hidden hover:text-gray-900 hover:bg-gray-100"
+            className="ml-auto p-2 text-gray-400 rounded-lg lg:hidden hover:text-gray-900 hover:bg-gray-50 transition-all"
+            aria-label="Close menu"
           >
             <X className="w-6 h-6" />
-          </button>
+          </motion.button>
         )}
       </div>
 
-      {/* Role-based Navigation */}
-      <div className="flex-1 px-4 py-6 overflow-y-auto">
-        <RoleBasedNavigation isMobile={false} />
-      </div>
+      {/* Role-based Navigation - Scrollable with padding for fixed bottom */}
+      <nav className="flex-1 px-4 py-6 pb-40 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent">
+        <RoleBasedNavigation isMobile={!!onClose} isCollapsed={onClose ? false : isCollapsed} />
+      </nav>
 
-      {/* Bottom Navigation */}
-      <div className="px-4 py-4 space-y-2 border-t border-gray-200">
-        {bottomNavigation.map((item) => {
-          const Icon = item.icon
+      {/* Bottom Section - Absolute positioned at bottom */}
+      <div className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-100">
+        {/* Bottom Navigation */}
+        <div className="px-4 py-3 space-y-1">
+          {bottomNavigation.map((item) => {
+            const Icon = item.icon
 
-          return (
-            <motion.div
-              key={item.name}
-              whileHover={{ x: 4 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              <Link
-                href={item.href}
-                onClick={onClose}
-                className="flex items-center p-2 text-gray-700 transition-all duration-200 rounded-lg group hover:bg-gray-50 hover:text-gray-900"
+            return (
+              <motion.div
+                key={item.name}
+                whileHover={{ x: isCollapsed ? 0 : 4 }}
+                whileTap={{ scale: 0.98 }}
               >
-                <Icon className="flex-shrink-0 w-5 h-5 mr-3 text-gray-400 group-hover:text-gray-500" />
-                <span className="text-sm font-medium">
-                  {item.name}
-                </span>
-              </Link>
-            </motion.div>
-          )
-        })}
-      </div>
+                <Link
+                  href={item.href}
+                  onClick={onClose}
+                  className={`flex items-center p-2 text-gray-600 transition-all duration-200 rounded-lg group hover:bg-gray-50 hover:text-gray-900 ${(isCollapsed && !onClose) ? 'justify-center' : ''}`}
+                  title={(isCollapsed && !onClose) ? item.name : ''}
+                >
+                  <Icon className={`flex-shrink-0 w-5 h-5 text-gray-400 group-hover:text-gray-500 ${(isCollapsed && !onClose) ? '' : 'mr-3'}`} />
+                  {(onClose || !isCollapsed) && (
+                    <span className="text-sm font-medium whitespace-nowrap">
+                      {item.name}
+                    </span>
+                  )}
+                </Link>
+              </motion.div>
+            )
+          })}
+        </div>
 
-      {/* Version Info */}
-      <div className="px-4 py-2 border-t border-gray-200">
-        <p className="text-xs text-center text-gray-500">
-          v1.0.0 - Avalanche Testnet
-        </p>
+        {/* Sidebar Footer */}
+        {!isCollapsed && (
+          <div className="px-4 py-2 border-t border-gray-100 bg-gray-50/50">
+            <p className="text-[10px] text-gray-400 text-center">
+              v1.0.0 • Fuji Testnet
+            </p>
+          </div>
+        )}
       </div>
     </div>
   )

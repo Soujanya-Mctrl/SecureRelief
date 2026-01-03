@@ -20,11 +20,12 @@ import {
 import { useAuth } from '../../contexts/AuthContext';
 import RoleGuard from '../Auth/RoleGuard';
 
-const RoleBasedNavigation = ({ isMobile = false }) => {
+const RoleBasedNavigation = ({ isMobile = false, isCollapsed = false }: { isMobile?: boolean; isCollapsed?: boolean }) => {
   const { user, isAuthenticated } = useAuth();
   const pathname = usePathname();
 
   const getNavigationItems = () => {
+    // ... items stay the same ...
     const baseItems = [
       {
         name: 'Home',
@@ -44,7 +45,7 @@ const RoleBasedNavigation = ({ isMobile = false }) => {
       },
       {
         name: 'Proof Gallery',
-        href: '/proof-gallery',
+        href: '/proof',
         icon: FileText,
         description: 'Aid distribution proof',
         roles: [],
@@ -53,7 +54,6 @@ const RoleBasedNavigation = ({ isMobile = false }) => {
     ];
 
     const roleSpecificItems = [
-      // Admin specific navigation
       {
         name: 'Admin Dashboard',
         href: '/admin',
@@ -62,8 +62,6 @@ const RoleBasedNavigation = ({ isMobile = false }) => {
         roles: ['admin'],
         permissions: ['manage:all']
       },
-
-      // Government specific navigation
       {
         name: 'Government Portal',
         href: '/government',
@@ -72,8 +70,6 @@ const RoleBasedNavigation = ({ isMobile = false }) => {
         roles: ['government'],
         permissions: ['disaster:create']
       },
-
-      // Treasury specific navigation
       {
         name: 'Treasury Management',
         href: '/treasury',
@@ -82,8 +78,6 @@ const RoleBasedNavigation = ({ isMobile = false }) => {
         roles: ['treasury'],
         permissions: ['treasury:allocate']
       },
-
-      // Oracle specific navigation
       {
         name: 'Oracle Dashboard',
         href: '/oracle',
@@ -92,8 +86,6 @@ const RoleBasedNavigation = ({ isMobile = false }) => {
         roles: ['oracle'],
         permissions: ['data:verify']
       },
-
-      // Vendor specific navigation
       {
         name: 'Vendor Portal',
         href: '/vendor',
@@ -102,8 +94,6 @@ const RoleBasedNavigation = ({ isMobile = false }) => {
         roles: ['vendor'],
         permissions: ['voucher:redeem']
       },
-
-      // Victim specific navigation
       {
         name: 'Victim Portal',
         href: '/victim',
@@ -112,8 +102,6 @@ const RoleBasedNavigation = ({ isMobile = false }) => {
         roles: ['victim'],
         permissions: ['voucher:claim']
       },
-
-      // Donor specific navigation
       {
         name: 'Donation Dashboard',
         href: '/donate',
@@ -124,7 +112,6 @@ const RoleBasedNavigation = ({ isMobile = false }) => {
       }
     ];
 
-    // Admin and Government get access to additional management tools
     const managementItems = [
       {
         name: 'Analytics',
@@ -166,20 +153,23 @@ const RoleBasedNavigation = ({ isMobile = false }) => {
         <Link
           href={item.href}
           className={`
-            flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors
+            flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-all duration-300
             ${isActive
-              ? 'bg-avalanche-100 text-avalanche-700 border-r-2 border-avalanche-500'
-              : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+              ? 'bg-avalanche-100/80 text-avalanche-700 border-r-2 border-avalanche-500'
+              : 'text-gray-600 hover:bg-gray-100/50 hover:text-gray-900'
             }
-            ${isMobile ? 'justify-start' : 'justify-center lg:justify-start'}
+            ${(isMobile || !isCollapsed) ? 'justify-start' : 'justify-center'}
           `}
+          title={isCollapsed ? item.name : ''}
         >
-          <Icon className={`${isMobile ? 'w-5 h-5 mr-3' : 'w-5 h-5 lg:mr-3'}`} />
-          <span className={`${isMobile ? 'block' : 'hidden lg:block'}`}>
-            {item.name}
-          </span>
-          {isActive && !isMobile && (
-            <div className="hidden w-2 h-2 ml-auto rounded-full bg-avalanche-500 lg:block" />
+          <Icon className={`w-5 h-5 flex-shrink-0 ${(isMobile || !isCollapsed) ? 'mr-3' : ''}`} />
+          {(isMobile || !isCollapsed) && (
+            <span className="truncate">
+              {item.name}
+            </span>
+          )}
+          {isActive && (isMobile || !isCollapsed) && (
+            <div className="w-2 h-2 ml-auto rounded-full bg-avalanche-500" />
           )}
         </Link>
       </RoleGuard>
@@ -190,16 +180,18 @@ const RoleBasedNavigation = ({ isMobile = false }) => {
     <nav className="space-y-1">
       {/* User Role Badge */}
       {isAuthenticated && user && (
-        <div className={`mb-6 ${isMobile ? 'px-4' : 'px-2'}`}>
-          <div className="p-3 text-white rounded-lg bg-gradient-to-r from-avalanche-500 to-avalanche-600">
-            <div className={`flex items-center ${isMobile ? 'justify-start' : 'justify-center lg:justify-start'}`}>
-              <Shield className={`${isMobile ? 'w-5 h-5 mr-2' : 'w-5 h-5 lg:mr-2'}`} />
-              <div className={`${isMobile ? 'block' : 'hidden lg:block'}`}>
-                <p className="text-sm font-medium capitalize">{user.role} Access</p>
-                <p className="text-xs text-avalanche-100">
-                  {user.authMethod === 'wallet' ? 'Web3 Connected' : 'Traditional Auth'}
-                </p>
-              </div>
+        <div className={`mb-6 ${isMobile ? 'px-4' : 'px-1'} transition-all duration-300`}>
+          <div className={`p-3 text-white rounded-lg bg-gradient-to-r from-avalanche-500 to-avalanche-600 shadow-md ${isCollapsed && !isMobile ? 'flex justify-center' : ''}`}>
+            <div className={`flex items-center ${(isMobile || !isCollapsed) ? 'justify-start' : 'justify-center'}`}>
+              <Shield className={`w-5 h-5 flex-shrink-0 ${(isMobile || !isCollapsed) ? 'mr-2' : ''}`} />
+              {(isMobile || !isCollapsed) && (
+                <div className="overflow-hidden">
+                  <p className="text-sm font-semibold capitalize truncate">{user.role} Access</p>
+                  <p className="text-[10px] text-avalanche-100 truncate opacity-90">
+                    {user.authMethod === 'wallet' ? 'Web3 Connected' : 'Standard Auth'}
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </div>

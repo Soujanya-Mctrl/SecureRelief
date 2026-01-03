@@ -151,7 +151,7 @@ const TransparencyPortal = () => {
     if (loading) {
         return (
             <Layout>
-                <div className="min-h-screen bg-gray-50">
+                <div className="min-h-screen">
                     <div className="flex items-center justify-center min-h-screen">
                         <LoadingSpinner size="lg" aria-label="Loading transparency data..." />
                     </div>
@@ -162,7 +162,7 @@ const TransparencyPortal = () => {
 
     return (
         <Layout>
-            <div className="min-h-screen bg-gray-50">
+            <div className="min-h-screen">
                 <div className="px-4 py-8 mx-auto max-w-7xl sm:px-6 lg:px-8">
                     {/* Ongoing Disaster Event Section */}
                     <div className="mb-10">
@@ -200,8 +200,7 @@ const TransparencyPortal = () => {
                                     <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
                                     <span>Live Updates</span>
                                 </div>
-                                <Button variant="outline" className="border-red-500 text-red-600 hover:bg-red-100 hover:text-red-700">
-                                    <Download className="w-4 h-4 mr-2" />
+                                <Button variant="outline" className="border-red-500 text-red-600 hover:bg-red-100 hover:text-red-700" icon={Download}>
                                     Export Data
                                 </Button>
                             </div>

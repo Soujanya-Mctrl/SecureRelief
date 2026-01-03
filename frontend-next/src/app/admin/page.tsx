@@ -217,7 +217,7 @@ const AdminDashboard = () => {
 
     return (
         <Layout>
-            <div className="min-h-screen bg-gray-50">
+            <div className="min-h-screen">
                 <div className="px-4 py-8 mx-auto max-w-7xl sm:px-6 lg:px-8">
                     {/* Header */}
                     <div className="mb-8">
@@ -299,14 +299,10 @@ const AdminDashboard = () => {
                                 {activeTab === 'overview' && (
                                     <div className="space-y-8">
                                         <RealTimeStats />
-                                        <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
-                                            <DonationChart />
-                                            <GeographicDistribution />
-                                        </div>
-                                        <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
-                                            <ImpactMetrics />
-                                            <ContractEventMonitor />
-                                        </div>
+                                        <DonationChart />
+                                        <ImpactMetrics />
+                                        <GeographicDistribution />
+                                        <ContractEventMonitor />
                                     </div>
                                 )}
 
