@@ -4,11 +4,11 @@
   "description": "Blockchain-powered disaster relief micro-funding network on Avalanche",
   "private": true,
   "scripts": {
-    "dev": "cd frontend-next && npm run dev",
-    "start": "cd frontend-next && npm run start",
-    "build": "cd frontend-next && npm run build",
-    "lint": "cd frontend-next && npm run lint",
-    "install:all": "npm install && cd frontend-next && npm install",
+    "dev": "cd frontend && npm run dev",
+    "start": "cd frontend && npm run start",
+    "build": "cd frontend && npm run build",
+    "lint": "cd frontend && npm run lint",
+    "install:all": "npm install && cd frontend && npm install",
     "clean": "rm -rf .backend.pid .frontend.pid"
   },
   "keywords": [
