@@ -25,7 +25,7 @@
     ],
     "paths": {
       "@/*": [
-        "./src/*"
+        "./*"
       ]
     }
   },
@@ -35,8 +35,9 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
-    "**/*.mts"
-, "next.config.js"  ],
+    "**/*.mts",
+    "next.config.js"
+  ],
   "exclude": [
     "legacy_views",
     "legacy_routes",
