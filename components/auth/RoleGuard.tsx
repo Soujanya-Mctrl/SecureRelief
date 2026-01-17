@@ -1,6 +1,6 @@
 'use client';
 
-import { useAuth, UserRole } from '@/context/MockAuthContext';
+import { useAuth, UserRole } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Loader2 } from 'lucide-react';

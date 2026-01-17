@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 import { ArrowRight, Activity, ShieldCheck, LayoutDashboard } from 'lucide-react';
 import Link from 'next/link';
 import { useAccount } from 'wagmi';
-import { useAuth } from '@/context/MockAuthContext'; // Or your auth context path
+import { useAuth } from '@/context/AuthContext';
 
 export function Hero() {
   const { isConnected } = useAccount();

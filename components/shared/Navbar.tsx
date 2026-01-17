@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { useAuth, UserRole } from '@/context/MockAuthContext';
+import { useAuth, UserRole } from '@/context/AuthContext';
 import { useAccount, useConnect, useDisconnect } from 'wagmi';
 import { ShieldCheck, Bell, User, LogOut, ChevronDown, Wallet, Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/Button';

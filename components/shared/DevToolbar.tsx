@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useAuth, UserRole } from '@/context/MockAuthContext';
+import { useAuth, UserRole } from '@/context/AuthContext';
 import { Button } from '@/components/ui/Button';
 import { Wrench } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -29,8 +29,8 @@ export function DevToolbar() {
                                     key={r}
                                     onClick={() => { setRole(r); }}
                                     className={`w-full text-left px-2 py-1.5 text-xs rounded transition-colors capitalize ${role === r
-                                            ? 'bg-primary text-primary-foreground font-medium'
-                                            : 'hover:bg-muted text-foreground'
+                                        ? 'bg-primary text-primary-foreground font-medium'
+                                        : 'hover:bg-muted text-foreground'
                                         }`}
                                 >
                                     {r}
