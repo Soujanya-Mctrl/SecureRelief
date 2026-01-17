@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/componen
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { useAccount } from 'wagmi';
-import { CheckCircle, AlertCircle, RefreshCw, WifiOff, FileText, Loader2, Upload, History, MapPin, Calendar } from 'lucide-react';
+import { CheckCircle, AlertCircle, RefreshCw, WifiOff, FileText, Loader2, Upload, History, MapPin, Calendar, Landmark } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { RoleGuard } from '@/components/auth/RoleGuard';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/Dialog';
@@ -64,8 +64,8 @@ export default function BeneficiaryDashboard() {
             <div className="container mx-auto p-4 md:p-8 space-y-8">
                 <div className="flex justify-between items-center">
                     <div>
-                        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">My Relief Aid</h1>
-                        <p className="text-muted-foreground">Access and manage your assigned relief benefits.</p>
+                        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">My Relief Vouchers</h1>
+                        <p className="text-muted-foreground">Access your verified digital vouchers. Present the QR code to any approved vendor to redeem.</p>
                     </div>
                     {isOffline && (
                         <Badge variant="destructive" className="flex gap-1 animate-pulse">
@@ -107,8 +107,8 @@ export default function BeneficiaryDashboard() {
                         )}
                         {status === 'verified' && (
                             <div className="text-right hidden md:block">
-                                <p className="text-xs text-muted-foreground uppercase font-semibold">Total Aid Received</p>
-                                <p className="text-2xl font-bold font-mono text-primary">$150.00</p>
+                                <p className="text-xs text-muted-foreground uppercase font-semibold">Total Voucher Value</p>
+                                <p className="text-2xl font-bold font-mono text-primary">$150.00 USDC</p>
                             </div>
                         )}
                     </CardContent>
@@ -166,46 +166,61 @@ export default function BeneficiaryDashboard() {
                                     className="grid grid-cols-1 md:grid-cols-2 gap-6"
                                 >
                                     {MOCK_VOUCHERS.map((voucher) => (
-                                        <div key={voucher.id} className="group bg-white dark:bg-slate-800 border text-card-foreground shadow-sm hover:shadow-md transition-all rounded-xl overflow-hidden flex flex-col md:flex-row">
+                                        <div key={voucher.id} className="group bg-white dark:bg-slate-800 border-2 border-primary/10 text-card-foreground shadow-sm hover:shadow-lg hover:border-primary/30 transition-all rounded-2xl overflow-hidden flex flex-col md:flex-row">
                                             {/* Left: Info */}
                                             <div className="p-6 flex-1 space-y-4">
                                                 <div className="flex justify-between items-start">
                                                     <div>
-                                                        <Badge variant="outline" className="mb-2 bg-primary/5 text-primary border-primary/20">{voucher.type}</Badge>
-                                                        <p className="text-2xl font-bold">{voucher.amount} USDC</p>
-                                                        <p className="text-xs text-muted-foreground mt-1">Expires: {voucher.expiry}</p>
+                                                        <div className="flex items-center gap-2 mb-2">
+                                                            <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20">
+                                                                {voucher.type === "Medical Supplies" ? <Landmark className="h-3 w-3 mr-1" /> : <FileText className="h-3 w-3 mr-1" />}
+                                                                {voucher.type}
+                                                            </Badge>
+                                                            <Badge variant="secondary" className="text-[10px] font-bold">VOUCHER #{voucher.id}</Badge>
+                                                        </div>
+                                                        <p className="text-3xl font-bold tracking-tight">{voucher.amount} <span className="text-base font-medium text-muted-foreground">USDC</span></p>
+                                                        <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                                                            <Calendar className="h-3 w-3" /> Valid until {voucher.expiry}
+                                                        </p>
                                                     </div>
                                                 </div>
 
-                                                <div className="pt-4 border-t border-dashed">
-                                                    <p className="text-xs font-medium text-muted-foreground uppercase mb-1">Valid At</p>
-                                                    <p className="text-sm font-medium flex items-center gap-1">
-                                                        <MapPin className="h-3 w-3 text-red-500" /> {voucher.zone}
-                                                    </p>
+                                                <div className="pt-4 border-t border-dashed space-y-3">
+                                                    <div>
+                                                        <p className="text-[10px] font-bold text-muted-foreground uppercase mb-1">Restricted To</p>
+                                                        <p className="text-sm font-semibold flex items-center gap-1">
+                                                            <MapPin className="h-3 w-3 text-red-500" /> {voucher.zone}
+                                                        </p>
+                                                    </div>
+
+                                                    <div className="flex gap-2">
+                                                        <Button variant="outline" size="sm" className="h-8 text-[10px] gap-1.5" onClick={() => window.print()}>
+                                                            <History className="h-3 w-3" /> Print PDF
+                                                        </Button>
+                                                        <Button variant="outline" size="sm" className="h-8 text-[10px] gap-1.5" onClick={() => alert('Voucher saved to your gallery for offline use.')}>
+                                                            <Upload className="h-3 w-3 rotate-180" /> Save to Gallery
+                                                        </Button>
+                                                    </div>
                                                 </div>
                                             </div>
 
                                             {/* Right: QR */}
-                                            <div className="bg-gray-50 dark:bg-slate-900/50 p-6 flex flex-col items-center justify-center border-l border-gray-100 dark:border-slate-800 relative">
-                                                <div className="bg-white p-2 rounded-lg shadow-sm border">
+                                            <div className="bg-slate-50 dark:bg-slate-900/50 p-8 flex flex-col items-center justify-center border-l dark:border-slate-800 relative min-w-[200px]">
+                                                <div className="bg-white p-3 rounded-2xl shadow-inner border-4 border-white">
                                                     <QRCode
                                                         value={JSON.stringify({
                                                             id: voucher.id,
                                                             amount: voucher.amount,
-                                                            beneficiary: "0x123", // Mock
-                                                            secret: "secure-relief-secret"
+                                                            beneficiary: "0x123",
+                                                            type: voucher.type,
+                                                            zone: voucher.zone
                                                         })}
-                                                        size={100}
-                                                        className="h-24 w-24"
+                                                        size={120}
+                                                        className="h-28 w-28"
                                                     />
                                                 </div>
-                                                <p className="text-[10px] text-muted-foreground mt-2 text-center">Scan to Redeem</p>
-
-                                                <div className="absolute top-2 right-2 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <Button variant="outline" size="icon" className="h-7 w-7 bg-white" title="Save Offline">
-                                                        <FileText className="h-3 w-3" />
-                                                    </Button>
-                                                </div>
+                                                <p className="text-[10px] font-bold text-primary mt-4 tracking-widest uppercase">Scan to Redeem</p>
+                                                <p className="text-[9px] text-muted-foreground mt-1 text-center max-w-[140px]">Show this to any approved vendor in the relief zone.</p>
                                             </div>
                                         </div>
                                     ))}

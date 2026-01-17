@@ -8,12 +8,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Plus, ShieldAlert, Users, Wallet, Activity, MoreHorizontal, Search, FileCog } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { RoleGuard } from '@/components/auth/RoleGuard';
+import { AidMap } from '@/components/map/AidMap';
 
 // Mock Data
+// Mock Data - Synced with AidMap for consistency
 const MOCK_ZONES = [
-    { id: 1, name: 'Turkey Earthquake Relief', location: 'Turkey/Syria Border', budget: 1000000, allocated: 800000, status: 'Active', beneficiaries: 12500 },
-    { id: 2, name: 'Morocco Flood Response', location: 'Atlas Mountains', budget: 500000, allocated: 150000, status: 'Active', beneficiaries: 3200 },
-    { id: 3, name: 'Sudan Crisis Aid', location: 'Khartoum', budget: 200000, allocated: 195000, status: 'Critical', beneficiaries: 850 },
+    { id: 1, name: 'Odisha Cyclone Response', location: 'Odisha, India', budget: 1200000, allocated: 800000, status: 'Critical', beneficiaries: 45000 },
+    { id: 2, name: 'Himachal Flood Relief', location: 'Himachal Pradesh', budget: 800000, allocated: 225000, status: 'Active', beneficiaries: 12200 },
+    { id: 3, name: 'Wayanad Landslide Recovery', location: 'Kerala, India', budget: 450000, allocated: 150000, status: 'Active', beneficiaries: 5500 },
 ];
 
 export default function AdminDashboard() {
@@ -55,10 +57,19 @@ export default function AdminDashboard() {
                 {/* Stats Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     <StatCard icon={Wallet} label="Total Treasury" value="$2.4M USDC" sub="Available for allocation" />
-                    <StatCard icon={ShieldAlert} label="Active Zones" value={zones.filter(z => z.status === 'Active').length.toString()} sub="Currently operational" />
+                    <StatCard icon={ShieldAlert} label="Active Zones" value={zones.filter(z => z.status === 'Active' || z.status === 'Critical').length.toString()} sub="Currently operational" />
                     <StatCard icon={Users} label="Total Beneficiaries" value="16,550" sub="Verified across all zones" />
                     <StatCard icon={Activity} label="System Health" value="98.9%" sub="All oracles online" theme="green" />
                 </div>
+
+                {/* Global Presence Map */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                >
+                    <AidMap />
+                </motion.div>
 
                 {/* Zones Management */}
                 <Card>
