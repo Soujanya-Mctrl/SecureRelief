@@ -1,0 +1,57 @@
+// Define custom types (Records)
+record Voucher {
+    id: string,
+    beneficiary_id: string,
+    amount: u64, // Simulating USDC (6 decimals usually)
+    zone_id: string,
+    status: string, // "Issued", "Redeemed", "Expired"
+    expiry: u64
+}
+
+record DisasterZone {
+    name: string,
+    active: bool,
+    budget_allocated: u64,
+    budget_spent: u64
+}
+
+record Vendor {
+    id: string,
+    category: string, // e.g., "Food", "Medical"
+    verified: bool
+}
+
+// The Main Interface
+// We mix USDC standard methods with our custom logic because it's a Monolith.
+@mcp // Exposes selected methods as tools for AI Agents
+interface AidDistributor {
+    // --- 1. Simulated USDC Standard (Fungible Token) ---
+    query func name() -> string;
+    query func symbol() -> string;
+    query func decimals() -> u8;
+    query func total_supply() -> u64;
+    query func balance_of(addr: string) -> u64;
+    mutate func transfer(to: string, amount: u64) -> result<bool, string>;
+    
+    // --- 2. Treasury & Zones ---
+    // AI Agent can call this to see if a zone needs funding
+    query func get_zone_details(zone_id: string) -> result<DisasterZone, string>;
+    mutate func add_disaster_zone(zone_id: string, name: string, initial_budget: u64) -> result<bool, string>;
+    mutate func allocate_budget(zone_id: string, amount: u64) -> result<bool, string>;
+
+    // --- 3. Vendor Registry ---
+    mutate func register_vendor(vendor_addr: string, category: string) -> result<bool, string>;
+    query func is_verified_vendor(vendor_addr: string) -> bool;
+
+    // --- 4. Voucher Logic ---
+    // Core logic: Minting a voucher struct into the Map
+    mutate func issue_voucher(beneficiary_id: string, zone_id: string, amount: u64, expiry_days: u64) -> result<string, string>;
+    
+    // Redeem: Vendor calls this to exchange Voucher for USDC
+    mutate func redeem_voucher(voucher_id: string) -> result<bool, string>;
+
+    // --- 5. MCP / Oracle ---
+    // An AI agent calling this triggers the contract to fetch external data (via HttpClient)
+    // and update the verification status on-chain.
+    mutate func verify_beneficiary_external(beneficiary_id: string, proof_url: string) -> result<bool, string>;
+}
