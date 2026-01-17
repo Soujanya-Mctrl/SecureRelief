@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useAuth, UserRole } from '@/context/MockAuthContext';
+import { useAuth, UserRole } from '@/context/AuthContext';
 import { Button } from '@/components/ui/Button';
 import { Wrench } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';

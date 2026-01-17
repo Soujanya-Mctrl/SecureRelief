@@ -3,7 +3,7 @@
 import { WagmiProvider } from 'wagmi';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { config } from '@/lib/config';
-import { AuthProvider } from '@/context/MockAuthContext';
+import { AuthProvider } from '@/context/AuthContext';
 import { useState } from 'react';
 
 export function Providers({ children }: { children: React.ReactNode }) {
