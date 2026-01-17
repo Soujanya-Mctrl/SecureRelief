@@ -9,7 +9,7 @@ import { useAccount } from 'wagmi';
 import { CheckCircle, AlertCircle, RefreshCw, WifiOff, FileText, Loader2, Upload, History, MapPin, Calendar } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { RoleGuard } from '@/components/auth/RoleGuard';
-import { Dialog, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/Dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/Dialog';
 
 type VerificationStatus = 'unverified' | 'pending' | 'verified';
 
@@ -116,38 +116,40 @@ export default function BeneficiaryDashboard() {
 
                 {/* Verification Dialog */}
                 <Dialog open={isVerifyOpen} onOpenChange={setIsVerifyOpen}>
-                    <DialogHeader>
-                        <DialogTitle>Verify Your Identity</DialogTitle>
-                        <DialogDescription>
-                            Upload a clear photo of your Aadhaar Card or Voter ID.
-                        </DialogDescription>
-                    </DialogHeader>
-                    <div className="space-y-4 py-4">
-                        <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-gray-50 transition-colors">
-                            <div className="h-12 w-12 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center mb-3">
-                                <Upload className="h-6 w-6" />
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>Verify Your Identity</DialogTitle>
+                            <DialogDescription>
+                                Upload a clear photo of your Aadhaar Card or Voter ID.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <div className="space-y-4 py-4">
+                            <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-gray-50 transition-colors">
+                                <div className="h-12 w-12 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center mb-3">
+                                    <Upload className="h-6 w-6" />
+                                </div>
+                                <p className="text-sm font-medium text-gray-900">Click to upload or drag and drop</p>
+                                <p className="text-xs text-gray-500 mt-1">SVG, PNG, JPG or PDF (max. 5MB)</p>
                             </div>
-                            <p className="text-sm font-medium text-gray-900">Click to upload or drag and drop</p>
-                            <p className="text-xs text-gray-500 mt-1">SVG, PNG, JPG or PDF (max. 5MB)</p>
+                            {uploadProgress > 0 && (
+                                <div className="space-y-1">
+                                    <div className="flex justify-between text-xs">
+                                        <span>Uploading...</span>
+                                        <span>{uploadProgress}%</span>
+                                    </div>
+                                    <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                                        <div className="h-full bg-primary transition-all duration-300" style={{ width: `${uploadProgress}%` }} />
+                                    </div>
+                                </div>
+                            )}
                         </div>
-                        {uploadProgress > 0 && (
-                            <div className="space-y-1">
-                                <div className="flex justify-between text-xs">
-                                    <span>Uploading...</span>
-                                    <span>{uploadProgress}%</span>
-                                </div>
-                                <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                                    <div className="h-full bg-primary transition-all duration-300" style={{ width: `${uploadProgress}%` }} />
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                    <DialogFooter>
-                        <Button variant="outline" onClick={() => setIsVerifyOpen(false)}>Cancel</Button>
-                        <Button onClick={handleVerifySubmit} disabled={uploadProgress > 0}>
-                            {uploadProgress > 0 ? 'Verifying...' : 'Submit Documents'}
-                        </Button>
-                    </DialogFooter>
+                        <DialogFooter>
+                            <Button variant="outline" onClick={() => setIsVerifyOpen(false)}>Cancel</Button>
+                            <Button onClick={handleVerifySubmit} disabled={uploadProgress > 0}>
+                                {uploadProgress > 0 ? 'Verifying...' : 'Submit Documents'}
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
                 </Dialog>
 
                 {/* Vouchers Section */}

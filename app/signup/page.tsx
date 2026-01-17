@@ -1,15 +1,15 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAccount, useConnect } from 'wagmi';
 import { injected } from 'wagmi/connectors';
 import { useRouter } from 'next/navigation';
-import { ShieldCheck, User, Users, Store, ArrowRight, Wallet, CheckCircle2, ChevronRight } from 'lucide-react';
+import { ShieldCheck, User, Users, Store, ArrowRight, Wallet, CheckCircle2, ChevronRight, AlertTriangle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import Link from 'next/link';
-import { useAuth, UserRole } from '@/context/MockAuthContext';
+import { useAuth, UserRole } from '@/context/AuthContext';
 
 const accountTypes = [
     {
@@ -40,9 +40,15 @@ const accountTypes = [
 
 export default function SignUpPage() {
     const { isConnected } = useAccount();
-    const { connect } = useConnect();
-    const { setRole } = useAuth();
+    const { connect, connectAsync, connectors } = useConnect();
+    const { setRole, role, isAuthenticated } = useAuth();
     const router = useRouter();
+
+    useEffect(() => {
+        if (isConnected && role && role !== 'guest' && isAuthenticated) {
+            router.push(`/dashboard/${role}`);
+        }
+    }, [isConnected, role, isAuthenticated, router]);
 
     const [step, setStep] = useState(1);
     const [selectedRole, setSelectedRole] = useState<string | null>(null);
@@ -51,15 +57,7 @@ export default function SignUpPage() {
     const handleNext = () => setStep(step + 1);
     const handleBack = () => setStep(step - 1);
 
-    const handleConnect = () => {
-        if (selectedRole) {
-            setRole(selectedRole as UserRole);
-            connect({ connector: injected() });
-            // In a real app, we'd wait for connection state, then push. 
-            // For this flow, we'll assume connection triggers the auth context update.
-            // We can add a listener or just rely on the user clicking "Go to Dashboard" after connect.
-        }
-    };
+
 
     // Redirect if already connected and role set? 
     // Maybe not, allow them to finish the "flow"
@@ -270,12 +268,37 @@ export default function SignUpPage() {
                                         </div>
                                     ) : (
                                         <div className="space-y-4">
-                                            <Button
-                                                className="w-full h-12 text-base gap-2 shadow-lg shadow-primary/25"
-                                                onClick={handleConnect}
-                                            >
-                                                Connect MetaMask
-                                            </Button>
+                                            {connectors.length > 0 ? (
+                                                connectors.map((connector) => (
+                                                    <Button
+                                                        key={connector.id}
+                                                        variant={connector.name === 'MetaMask' ? 'default' : 'outline'}
+                                                        className="w-full h-12 text-base gap-2 shadow-lg"
+                                                        onClick={async () => {
+                                                            try {
+                                                                if (selectedRole) setRole(selectedRole as UserRole);
+                                                                console.log(`[Auth] Attempting to connect with ${connector.name}...`);
+                                                                await connectAsync({ connector });
+                                                            } catch (err) {
+                                                                console.error("SignUp connection failed:", err);
+                                                                if ((err as any).code !== 4001) {
+                                                                    alert(`Connection failed: ${err instanceof Error ? err.message : 'Unknown error'}`);
+                                                                }
+                                                            }
+                                                        }}
+                                                    >
+                                                        <Wallet className="h-4 w-4" />
+                                                        Connect {connector.name}
+                                                    </Button>
+                                                ))
+                                            ) : (
+                                                <div className="text-center p-4 border border-dashed rounded-lg text-sm text-destructive bg-destructive/5">
+                                                    <AlertTriangle className="h-5 w-5 mx-auto mb-2" />
+                                                    No wallet detected. Please ensure MetaMask is installed.
+                                                    <br />
+                                                    <Button variant="link" size="sm" className="mt-2" onClick={() => window.location.reload()}>Refresh</Button>
+                                                </div>
+                                            )}
                                             <p className="text-xs text-muted-foreground mt-4">
                                                 By connecting, you agree to our Terms of Service and Privacy Policy.
                                             </p>

@@ -226,7 +226,7 @@ export function Navbar() {
                                                 <div className="px-3 py-2 border-t border-border/50">
                                                     <p className="text-[10px] uppercase font-bold text-muted-foreground mb-2 tracking-wider">Dev Tools: Switch Role</p>
                                                     <div className="grid grid-cols-2 gap-1">
-                                                        {['donor', 'admin', 'beneficiary', 'vendor'].map((r) => (
+                                                        {['donor', 'admin', 'beneficiary', 'vendor', 'oracle', 'agency'].map((r) => (
                                                             <button
                                                                 key={r}
                                                                 onClick={() => { setRole(r as UserRole); setIsUserOpen(false); }}

@@ -9,6 +9,7 @@ import Link from 'next/link';
 import { ShieldCheck, User, Users, Store, Glasses, Landmark, ArrowRight, Wallet, AlertTriangle, Code } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/Button';
+import { cn } from '@/lib/utils';
 
 const roles = [
     { id: 'donor', label: 'Donor', icon: User, desc: 'Global impact, verified.' },
@@ -16,31 +17,25 @@ const roles = [
     { id: 'vendor', label: 'Vendor', icon: Store, desc: 'Scan & redeem vouchers.' },
     { id: 'admin', label: 'Admin', icon: ShieldCheck, desc: 'System oversight.' },
     { id: 'oracle', label: 'Oracle', icon: Glasses, desc: 'Verify claims.' },
-    { id: 'government', label: 'Government', icon: Landmark, desc: 'Compliance & audit.' },
+    { id: 'agency', label: 'Agency', icon: Landmark, desc: 'Compliance & audit.' },
 ];
 
 export default function LoginPage() {
     const { isConnected } = useAccount();
-    const { connect, connectors } = useConnect();
-    const { setRole, isAuthenticated, role } = useAuth();
+    const { connect, connectAsync, connectors } = useConnect();
+    const { setRole, isAuthenticated, role, loginAsDemo } = useAuth();
     const router = useRouter();
 
 
     useEffect(() => {
-        if (isAuthenticated && role && role !== 'guest') {
+        // If we just connected and have a role selected (not guest), redirect
+        if (isConnected && role && role !== 'guest' && isAuthenticated) {
             router.push(`/dashboard/${role}`);
         }
-    }, [isAuthenticated, role, router]);
+    }, [isConnected, role, isAuthenticated, router]);
 
-    const handleLogin = (roleId: string) => {
+    const handleRoleSelect = (roleId: string) => {
         setRole(roleId as UserRole);
-        // If not connected, we still set role for dev testing, but normally we'd want wallet first.
-        // For dev mode, we allow bypass.
-        if (!isConnected) {
-            connect({ connector: injected() });
-        } else {
-            router.push(`/dashboard/${roleId}`);
-        }
     };
 
     return (
@@ -85,68 +80,99 @@ export default function LoginPage() {
                     </div>
 
                     {/* Role Selection Grid */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                         {roles.map((r) => (
                             <button
                                 key={r.id}
-                                onClick={() => handleLogin(r.id)}
-                                className="flex flex-col items-start gap-3 p-4 bg-card hover:bg-muted/50 rounded-xl text-left transition-all border shadow-sm hover:shadow-md hover:border-primary/50 group"
+                                onClick={() => handleRoleSelect(r.id)}
+                                className={cn(
+                                    "flex flex-col items-center gap-2 p-4 bg-card rounded-xl text-center transition-all border shadow-sm hover:shadow-md",
+                                    role === r.id ? "ring-2 ring-primary border-transparent bg-primary/5 scale-[1.02]" : "hover:border-primary/50"
+                                )}
                             >
-                                <div className="p-2 bg-primary/10 rounded-lg text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                                <div className={cn(
+                                    "p-2 rounded-lg transition-colors",
+                                    role === r.id ? "bg-primary text-white" : "bg-primary/10 text-primary"
+                                )}>
                                     <r.icon className="h-5 w-5" />
                                 </div>
-                                <div>
-                                    <div className="font-semibold text-foreground">{r.label}</div>
-                                    <div className="text-xs text-muted-foreground mt-1">{r.desc}</div>
-                                </div>
+                                <div className="font-semibold text-xs">{r.label}</div>
                             </button>
                         ))}
                     </div>
 
-                    <div className="relative">
-                        <div className="absolute inset-0 flex items-center">
-                            <span className="w-full border-t" />
-                        </div>
-                        <div className="relative flex justify-center text-xs uppercase">
-                            <span className="bg-background px-2 text-muted-foreground">Or connect cleanly</span>
-                        </div>
-                    </div>
+                    <AnimatePresence mode="wait">
+                        {role !== 'guest' ? (
+                            <motion.div
+                                key="options"
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -10 }}
+                                className="space-y-6"
+                            >
+                                <div className="space-y-3">
+                                    <p className="text-[10px] font-bold uppercase text-muted-foreground tracking-widest flex items-center gap-2">
+                                        <div className="h-[1px] flex-1 bg-border" />
+                                        Option 1: Web3 Wallet
+                                        <div className="h-[1px] flex-1 bg-border" />
+                                    </p>
+                                    <div className="space-y-2">
+                                        {connectors.length > 0 ? (
+                                            connectors.map((connector) => (
+                                                <Button
+                                                    key={connector.id}
+                                                    variant="outline"
+                                                    className="w-full h-11 text-sm gap-2 border-primary/20 hover:border-primary/50"
+                                                    onClick={async () => {
+                                                        try {
+                                                            await connectAsync({ connector });
+                                                        } catch (err: any) {
+                                                            if (err.code !== 4001) alert(`Wallet error: ${err.message}`);
+                                                        }
+                                                    }}
+                                                >
+                                                    <Wallet className="h-4 w-4" />
+                                                    {isConnected ? `Use Connected ${connector.name}` : `Login with ${connector.name}`}
+                                                </Button>
+                                            ))
+                                        ) : (
+                                            <div className="text-xs text-amber-600 bg-amber-50 p-3 rounded-lg flex gap-2 border border-amber-100">
+                                                <AlertTriangle className="h-4 w-4 shrink-0" />
+                                                No wallet detected. Please install MetaMask or use Demo mode below.
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
 
-                    <div className="space-y-3">
-                        <Button
-                            className="w-full h-12 text-base gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white border-0 shadow-lg shadow-indigo-500/20"
-                            onClick={() => {
-                                const injectedConnector = connectors.find(c => c.id === 'injected');
-                                if (injectedConnector) connect({ connector: injectedConnector });
-                            }}
-                            disabled={isConnected}
-                        >
-                            <div className="h-6 w-6 bg-white/20 rounded-full flex items-center justify-center border border-white/30 backdrop-blur-sm">
-                                <span className="text-[10px] font-bold text-white">W</span>
-                            </div>
-                            {isConnected ? 'Weilliptic Connected' : 'Connect Weilliptic'}
-                        </Button>
-
-                        <Button
-                            variant="outline"
-                            className="w-full h-12 text-base gap-2"
-                            onClick={() => {
-                                const mmConnector = connectors.find(c => c.name === 'MetaMask' || c.id === 'io.metamask');
-                                if (mmConnector) {
-                                    connect({ connector: mmConnector });
-                                } else {
-                                    const fallback = connectors.find(c => c.id !== 'injected');
-                                    if (fallback) connect({ connector: fallback });
-                                }
-                            }}
-                            disabled={isConnected}
-                        >
-                            <div className="relative h-5 w-5">
-                                <Wallet className="h-5 w-5" />
-                            </div>
-                            {isConnected ? 'Wallet Connected' : 'Connect MetaMask / Other'}
-                        </Button>
-                    </div>
+                                <div className="space-y-3">
+                                    <p className="text-[10px] font-bold uppercase text-muted-foreground tracking-widest flex items-center gap-2">
+                                        <div className="h-[1px] flex-1 bg-border" />
+                                        Option 2: Demo Bypass
+                                        <div className="h-[1px] flex-1 bg-border" />
+                                    </p>
+                                    <Button
+                                        className="w-full h-12 text-base font-bold gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white border-0 shadow-lg shadow-blue-500/20"
+                                        onClick={() => loginAsDemo(role)}
+                                    >
+                                        <Code className="h-4 w-4" />
+                                        Login as {role.toUpperCase()} (Instant)
+                                    </Button>
+                                    <p className="text-[10px] text-center text-muted-foreground italic">
+                                        Bypasses wallet requirement for rapid development testing.
+                                    </p>
+                                </div>
+                            </motion.div>
+                        ) : (
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                className="p-10 text-center border-2 border-dashed rounded-2xl bg-muted/5 border-border/50"
+                            >
+                                <User className="h-8 w-8 mx-auto mb-3 opacity-10" />
+                                <p className="text-sm text-muted-foreground font-medium italic">Select a role above to unlock login options</p>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
 
                     <div className="text-center text-sm text-muted-foreground">
                         New to SecureRelief?{' '}

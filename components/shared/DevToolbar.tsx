@@ -10,7 +10,7 @@ export function DevToolbar() {
     const { role, setRole } = useAuth();
     const [isOpen, setIsOpen] = useState(false);
 
-    const roles: UserRole[] = ['guest', 'admin', 'donor', 'beneficiary', 'vendor', 'oracle', 'government'];
+    const roles: UserRole[] = ['guest', 'admin', 'donor', 'beneficiary', 'vendor', 'oracle', 'agency'];
 
     return (
         <div className="fixed bottom-4 right-4 z-[100] flex flex-col items-end">
